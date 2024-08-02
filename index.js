@@ -1,12 +1,24 @@
 const express = require('express');
 const axios = require('axios');
 const morgan = require('morgan');
+const winston = require('winston');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const TARGET_URL = process.env.JSONRPC_URL;
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
+    ),
+    transports: [
+        new winston.transports.File({ filename: 'proxy.log' })
+    ]
+});
 
 // 使用 morgan 进行日志记录
 app.use(morgan('combined'));
@@ -21,6 +33,8 @@ app.post('/', async (req, res) => {
 
         // 记录请求
         console.log('Request:', req.body);
+         // 记录请求
+        logger.info(`Request: ${JSON.stringify(req.body)}`);
 
         // eth_call 适配
         if (method === 'eth_call') {
@@ -49,11 +63,13 @@ app.post('/', async (req, res) => {
 
         // 记录响应
         console.log('Response:', data);
+        logger.info(`Response: ${JSON.stringify(data)}`);
 
         // 返回响应给客户端
         res.json(data);
     } catch (error) {
         console.error('Error:', error.message || error);
+        logger.error(`Error: ${error.message || error}`);
         res.status(500).json({ error: error.message || 'Internal Server Error' });
     }
 });
