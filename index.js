@@ -34,7 +34,7 @@ app.post('/', async (req, res) => {
         // 记录请求
         console.log('Request:', req.body);
          // 记录请求
-        logger.info(`Request: ${JSON.stringify(req.body)}`);
+        logger.info(`Request: ${JSON.stringify(req.body, null, '\t')}`);
 
         // eth_call 适配
         if (method === 'eth_call') {
@@ -63,7 +63,7 @@ app.post('/', async (req, res) => {
 
         // 记录响应
         console.log('Response:', data);
-        logger.info(`Response: ${JSON.stringify(data)}`);
+        logger.info(`Response: ${JSON.stringify(data, null, '\t')}`);
 
         // 返回响应给客户端
         res.json(data);
