@@ -14,19 +14,44 @@ app.use(morgan('combined'));
 // 解析 JSON 请求体
 app.use(bodyParser.json());
 
+// 不支持 batch 请求
 app.post('/', async (req, res) => {
     try {
+        const method = req.body.method;
+
         // 记录请求
         console.log('Request:', req.body);
 
+        // eth_call 适配
+        if (method === 'eth_call') {
+            if (req.body.params[0] && req.body.params[0].input) {
+                req.body.params[0].data = req.body.params[0].input;
+            }
+        }
+
         // 将请求转发到目标 JSON-RPC 服务器
-        const response = await axios.post(TARGET_URL, req.body);
+        const {data} = await axios.post(TARGET_URL, req.body);
+
+        // handle yParity and v is not same
+        if (method === 'eth_getTransactionByHash') {
+            if (data.result) {
+                data.result.v = data.result.yParity;
+            }
+        }
+
+        if (method === 'eth_getBlockByHash' || method === 'eth_getBlockByNumber') {
+            if (data.result && data.result.transactions.length > 0 && typeof data.result.transactions[0] === 'object') {
+                for(let i = 0; i < data.result.transactions.length; i++) {
+                    data.result.transactions[i].v = data.result.transactions[i].yParity;
+                }
+            }
+        }
 
         // 记录响应
-        console.log('Response:', response.data);
+        console.log('Response:', data);
 
         // 返回响应给客户端
-        res.json(response.data);
+        res.json(data);
     } catch (error) {
         console.error('Error:', error.message || error);
         res.status(500).json({ error: error.message || 'Internal Server Error' });
