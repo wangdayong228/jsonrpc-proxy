@@ -6,6 +6,7 @@ require('dotenv').config();
 const adaptEthCall = require('./middlewares/eth_call');
 const jsonrpcMeta = require('./middlewares/jsonrpc_meta');
 const adaptTxRelatedMethods = require('./middlewares/tx_related_methods');
+const blockMethods = require('./middlewares/block_methods');
 
 const app = new Koa();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use(bodyParser());
 app.use(jsonrpcMeta(logger));
 app.use(adaptEthCall);
 app.use(adaptTxRelatedMethods);
+app.use(blockMethods);
 
 // 不支持 batch 请求
 app.use(async (ctx) => {

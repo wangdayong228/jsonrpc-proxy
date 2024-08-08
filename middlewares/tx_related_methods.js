@@ -1,11 +1,11 @@
 
+// handle yParity and v is not same
 module.exports = async function (ctx, next) {
 
     const method = ctx.request.rpcMethod;
     
     await next();
 
-    // handle yParity and v is not same
     if (method === 'eth_getTransactionByHash' || method === 'eth_getTransactionByBlockHashAndIndex' || method === 'eth_getTransactionByBlockNumberAndIndex') {
         if (ctx.body.result && ctx.body.result.yParity) {
             ctx.body.result.v = ctx.body.result.yParity;
