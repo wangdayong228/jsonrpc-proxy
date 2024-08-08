@@ -14,9 +14,11 @@ module.exports = async function (ctx, next) {
 
     if (method === 'eth_getBlockByHash' || method === 'eth_getBlockByNumber') {
         if (ctx.body.result && ctx.body.result.transactions.length > 0 && typeof ctx.body.result.transactions[0] === 'object') {
-            for(let i = 0; i < ctx.body.result.transactions.length; i++) {
-                ctx.body.result.transactions[i] = adaptTx(ctx.body.result.transactions[i]);
+            let transactions = ctx.body.result.transactions.filter(tx => tx.r !== '0x0' && tx.s !== '0x0');
+            for(let i = 0; i < transactions.length; i++) {
+                transactions[i] = adaptTx(transactions[i]);
             }
+            ctx.body.result.transactions = transactions;
         }
     }
 }
