@@ -1,16 +1,21 @@
 
 
 module.exports = function (logger) {
-    return async function(ctx, next) {
+    return async function (ctx, next) {
         console.log('jsonrpc_meta middleware');
         try {
-            const {id, method, params} = ctx.request.body;
+
+            if (!ctx.request.body || !ctx.request.body.id === undefined) {
+                logger.error(`No id found of Request: ${JSON.stringify(ctx.request.body, null, '\t')}`);
+            }
+
+            const { id, method, params } = ctx.request.body;
             ctx.request.rpcId = id;
             ctx.request.rpcMethod = method;
 
             await next();
 
-            if(!ctx.body){
+            if (!ctx.body) {
                 logger.error(`No body found of Request: Req-${id} ${method}, ${JSON.stringify(params || [], null, '\t')}`);
                 throw new Error('No response body found');
             }
@@ -30,7 +35,7 @@ module.exports = function (logger) {
                 }, null, '\t')}`);
             }
         } catch (error) {
-            logger.error(`Print json meta Error: ${error.message || error} ${error.stack}`);
+            logger.error(`Print json meta Error:\nrequest body: ${JSON.stringify(ctx.request.body)}\nresponse body: ${JSON.stringify(ctx.body)}\nerror: ${error.message || error} ${error.stack}`);
             ctx.body = {
                 jsonrpc: '2.0',
                 id: ctx.request.body.id,

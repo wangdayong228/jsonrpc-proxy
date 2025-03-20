@@ -11,8 +11,12 @@ const blockMethods = require('./middlewares/block_methods');
 const adaptEthGetLogs = require('./middlewares/eth_getLogs');
 const eth_transactionCount = require('./middlewares/eth_transactionCount');
 const eth_getBalance = require('./middlewares/eth_getBalance');
+const eth_getCode = require('./middlewares/eth_getCode');
+const eth_getStorageAt = require('./middlewares/eth_getStorageAt');
+const eth_estimateGas = require('./middlewares/eth_estimateGas');
 
 const PORTS = process.env.PORTS || 3000;
+console.log('PORTS', PORTS);
 const TARGET_URL = process.env.JSONRPC_URL;
 const L2_RPC_URL = process.env.L2_RPC_URL;
 
@@ -53,12 +57,17 @@ function creatLogger(port) {
 }
 async function startServer(port) {
     const logger = creatLogger(port);
+    logger.info(`Starting server, port ${port}, TARGET_URL: ${TARGET_URL}, L2_RPC_URL: ${L2_RPC_URL}`);
+
     const app = websockify(new Koa());
     // 解析 JSON 请求体
     app.use(bodyParser());
     app.use(jsonrpcMeta(logger));
     app.use(eth_transactionCount);
     app.use(eth_getBalance);
+    app.use(eth_getCode);
+    app.use(eth_getStorageAt);
+    // app.use(eth_estimateGas);
 
     // app.use(adaptEthCall);
     // app.use(adaptTxRelatedMethods);

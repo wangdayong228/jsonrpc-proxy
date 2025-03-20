@@ -1,4 +1,6 @@
-const getBlockByHash = require('../lib/getBlockByHash');
+const { getBlockByHash } = require('../lib/rpc');
+const { headerForHashNotFound } = require('../lib/response');
+
 
 module.exports = async function (ctx, next) {
     console.log('eth_transactionCount middleware');
@@ -9,6 +11,10 @@ module.exports = async function (ctx, next) {
         if (params[1] && params[1].length == 66) {
             try {
                 const block = await getBlockByHash(ctx.request.body.params[1]);
+                if (!block) {
+                    headerForHashNotFound(ctx);
+                    return;
+                }
                 ctx.request.body.params[1] = "0x" + block.number.toString(16);
             } catch (error) {
                 console.error('获取区块失败:', error);
