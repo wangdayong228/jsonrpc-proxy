@@ -15,9 +15,13 @@ module.exports = function (logger) {
 
             await next();
 
-            if (!ctx.body) {
+            if (ctx.body === undefined) {
                 logger.error(`No body found of Request: Req-${id} ${method}, ${JSON.stringify(params || [], null, '\t')}`);
                 throw new Error('No response body found');
+            }
+
+            if (ctx.body === null) {
+                return
             }
 
             if (ctx.body.error) {

@@ -1,9 +1,9 @@
-const getBlockByHash = require('../lib/rpc');
+const { getBlockByHash } = require('../lib/rpc');
 const { headerForHashNotFound: headerForHashNotFound } = require('../lib/response');
 module.exports = async function (ctx, next) {
     console.log('eth_getStorageAt middleware');
 
-    const {method, params} = ctx.request.body;
+    const { method, params } = ctx.request.body;
     if (method === 'eth_getStorageAt') {
         console.log('trigger eth_getStorageAt');
         // position should be big integer

@@ -14,11 +14,17 @@ const eth_getBalance = require('./middlewares/eth_getBalance');
 const eth_getCode = require('./middlewares/eth_getCode');
 const eth_getStorageAt = require('./middlewares/eth_getStorageAt');
 const eth_estimateGas = require('./middlewares/eth_estimateGas');
+const eth_feeHistory = require('./middlewares/eth_feeHistory');
+const eth_getBlockByNumber = require('./middlewares/eth_getBlockByNumber');
+const eth_getBlockByHash = require('./middlewares/eth_getBlockByHash');
+const eth_call = require('./middlewares/eth_call');
+const block_cache = require('./lib/block_cache');
 
 const PORTS = process.env.PORTS || 3000;
 console.log('PORTS', PORTS);
 const TARGET_URL = process.env.JSONRPC_URL;
 const L2_RPC_URL = process.env.L2_RPC_URL;
+const CORRECT_BLOCK_HASH = process.env.CORRECT_BLOCK_HASH || false;
 
 const l2_methods = [
     'zkevm_batchNumber',
@@ -55,6 +61,15 @@ function creatLogger(port) {
         ]
     });
 }
+
+// TODO: block 相关 rpc 支持
+// eth_getBlockByNumber [v]
+// eth_getBlockByHash
+// eth_getTransactionByBlockHashAndIndex
+// eth_getTransactionByBlockNumberAndIndex
+// eth_getTransactionReceipt
+// eth_getUncleByBlockHashAndIndex
+
 async function startServer(port) {
     const logger = creatLogger(port);
     logger.info(`Starting server, port ${port}, TARGET_URL: ${TARGET_URL}, L2_RPC_URL: ${L2_RPC_URL}`);
@@ -67,7 +82,15 @@ async function startServer(port) {
     app.use(eth_getBalance);
     app.use(eth_getCode);
     app.use(eth_getStorageAt);
+    app.use(eth_feeHistory);
+
+    if (CORRECT_BLOCK_HASH) {
+        app.use(eth_getBlockByNumber);
+        app.use(eth_getBlockByHash);
+        app.use(eth_call);
+    }
     // app.use(eth_estimateGas);
+
 
     // app.use(adaptEthCall);
     // app.use(adaptTxRelatedMethods);
@@ -139,6 +162,8 @@ async function startServer(port) {
 
 
 async function main() {
+    await block_cache.init();
+
     const ports = PORTS.split(',').map(Number);
     for (const port of ports) {
         await startServer(port);

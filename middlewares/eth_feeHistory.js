@@ -10,12 +10,12 @@ module.exports = async function (ctx, next) {
 
         const {baseFeePerGas} = ctx.body.result;
         for (let i = 0; i < baseFeePerGas.length; i++) {
-            if(baseFeePerGas[i] < maxPriorityFee) {
+            if(BigInt(baseFeePerGas[i]) < BigInt(maxPriorityFee)) {
                 baseFeePerGas[i] = maxPriorityFee;
             }
 
-            if(baseFeePerGas[i] < 1e9) {
-                baseFeePerGas[i] = 1e9;
+            if(BigInt(baseFeePerGas[i]) < BigInt(1e9)) {
+                baseFeePerGas[i] = "0x" + BigInt(1e9).toString(16);
             }
         }
         ctx.body.result.baseFeePerGas = baseFeePerGas;
