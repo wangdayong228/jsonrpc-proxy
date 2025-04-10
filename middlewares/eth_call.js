@@ -3,8 +3,9 @@ const { headerForHashNotFound } = require('../lib/response');
 
 module.exports = async function (ctx, next) {
 
+    console.log("eth_call middleware");
     if (ctx.request.rpcMethod === 'eth_call' || ctx.request.rpcMethod === 'eth_estimateGas') {
-
+        console.log("trigger eth_call or eth_estimateGas");
         const params = ctx.request.body.params;
         if (params[0]) {
             if (!params[0].data) {
@@ -19,7 +20,7 @@ module.exports = async function (ctx, next) {
                     headerForHashNotFound(ctx);
                     return;
                 }
-                ctx.request.body.params[1].blockHash = block.hash;
+                ctx.request.body.params[1].blockHash = block.rawHash;
             } catch (error) {
                 console.error('获取block失败:', error);
                 throw error
@@ -28,4 +29,5 @@ module.exports = async function (ctx, next) {
     }
 
     await next();
+    console.log("eth_call middleware end");
 }

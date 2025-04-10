@@ -18,7 +18,7 @@ module.exports = async function (ctx, next) {
                     headerForHashNotFound(ctx);
                     return;
                 }
-                ctx.request.body.params[2] = "0x" + block.number.toString(16);
+                ctx.request.body.params[2] = "0x" + BigInt(block.number).toString(16);
             } catch (error) {
                 console.error('获取block失败:', error);
                 throw error

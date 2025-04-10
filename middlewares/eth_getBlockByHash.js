@@ -1,4 +1,4 @@
-const { getRawBlockHash, getComputedBlockHash } = require('../lib/block_cache');
+const { getRawBlockHash } = require('../lib/block_cache');
 const { resultNull } = require('../lib/response');
 module.exports = async function (ctx, next) {
     console.log('eth_getBlockByHash middleware');

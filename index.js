@@ -18,6 +18,7 @@ const eth_feeHistory = require('./middlewares/eth_feeHistory');
 const eth_getBlockByNumber = require('./middlewares/eth_getBlockByNumber');
 const eth_getBlockByHash = require('./middlewares/eth_getBlockByHash');
 const eth_call = require('./middlewares/eth_call');
+const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
 const block_cache = require('./lib/block_cache');
 
 const PORTS = process.env.PORTS || 3000;
@@ -83,13 +84,15 @@ async function startServer(port) {
     app.use(eth_getCode);
     app.use(eth_getStorageAt);
     app.use(eth_feeHistory);
+    app.use(eth_estimateGas);
 
     if (CORRECT_BLOCK_HASH) {
         app.use(eth_getBlockByNumber);
         app.use(eth_getBlockByHash);
         app.use(eth_call);
+        app.use(eth_getBlockReceipts);
     }
-    // app.use(eth_estimateGas);
+    
 
 
     // app.use(adaptEthCall);
