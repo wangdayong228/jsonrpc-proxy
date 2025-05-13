@@ -1,4 +1,4 @@
-const { getRawBlockHash } = require('../lib/block_cache');
+const { db } = require('../lib/cache');
 const { resultNull } = require('../lib/response');
 module.exports = async function (ctx, next) {
     console.log('eth_getBlockByHash middleware');
@@ -10,11 +10,12 @@ module.exports = async function (ctx, next) {
 
     console.log('trigger eth_getBlockByHash');
     const inputHash = ctx.request.body.params[0];
-    if (!getRawBlockHash(inputHash)) {
+    const cfxHash = await db.getCfxHashByEthHash(inputHash)
+    if (!cfxHash) {
         return resultNull(ctx);
     }
 
-    const rawHash = getRawBlockHash(inputHash);
+    const rawHash = cfxHash;
     ctx.request.body.params[0] = rawHash;
 
     await next();

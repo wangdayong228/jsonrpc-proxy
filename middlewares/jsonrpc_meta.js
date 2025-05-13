@@ -3,6 +3,7 @@
 module.exports = function (logger) {
     return async function (ctx, next) {
         console.log('jsonrpc_meta middleware');
+        const startAt = Date.now();
         try {
 
             if (!ctx.request.body || !ctx.request.body.id === undefined) {
@@ -27,8 +28,9 @@ module.exports = function (logger) {
             if (ctx.body.error) {
                 logger.error(`Req-${id} Error: ${JSON.stringify({
                     method,
-                    params,
-                    error: ctx.body.error
+                    params: params || [],
+                    error: ctx.body.error,
+                    duration: Date.now() - startAt
                 })}`);
             } else {
                 logger.info(`Req & Res: ${JSON.stringify({
@@ -36,6 +38,7 @@ module.exports = function (logger) {
                     method,
                     params: params || [],
                     result: ctx.body.result,
+                    duration: Date.now() - startAt
                 }, null, '\t')}`);
             }
         } catch (error) {

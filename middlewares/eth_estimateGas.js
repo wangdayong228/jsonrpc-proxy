@@ -4,7 +4,7 @@ module.exports = async function (ctx, next) {
     await next();
     if (method === 'eth_estimateGas') {
         console.log('trigger eth_estimateGas, result:', ctx.body.result);
-        if (!ctx.body.result.startsWith('0x')) {
+        if (!ctx.body.result || !ctx.body.result.startsWith('0x')) {
             return;
         }
 

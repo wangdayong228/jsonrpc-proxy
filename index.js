@@ -19,7 +19,7 @@ const eth_getBlockByNumber = require('./middlewares/eth_getBlockByNumber');
 const eth_getBlockByHash = require('./middlewares/eth_getBlockByHash');
 const eth_call = require('./middlewares/eth_call');
 const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
-const block_cache = require('./lib/block_cache');
+const { db } = require('./lib/cache');
 
 const PORTS = process.env.PORTS || 3000;
 console.log('PORTS', PORTS);
@@ -165,7 +165,7 @@ async function startServer(port) {
 
 
 async function main() {
-    await block_cache.init();
+    await db.initTable();
 
     const ports = PORTS.split(',').map(Number);
     for (const port of ports) {

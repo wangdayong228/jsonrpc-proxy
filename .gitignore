@@ -3,3 +3,5 @@ node_modules
 logs
 data
 .log
+rpc_cache.db
+db_demo.js
