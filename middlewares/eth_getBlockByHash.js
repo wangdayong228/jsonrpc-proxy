@@ -1,5 +1,7 @@
 const { db } = require('../lib/cache');
 const { resultNull } = require('../lib/response');
+const { correctBlockHash } = require('../lib/block_hash');
+
 module.exports = async function (ctx, next) {
     console.log('eth_getBlockByHash middleware');
 
@@ -15,15 +17,9 @@ module.exports = async function (ctx, next) {
         return resultNull(ctx);
     }
 
-    const rawHash = cfxHash;
-    ctx.request.body.params[0] = rawHash;
-
     await next();
     const block = ctx.response.body.result;
-    if (block) {
-        block.rawHash = rawHash;
-        block.hash = inputHash;
-    }
+    await correctBlockHash(block);
 
     console.log('eth_getBlockByHash middleware end');
 }

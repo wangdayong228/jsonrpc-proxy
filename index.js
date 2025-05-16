@@ -3,7 +3,6 @@ const websockify = require('koa-websocket');
 const axios = require('axios');
 const winston = require('winston');
 const { bodyParser } = require("@koa/bodyparser");
-require('dotenv').config();
 const adaptEthCall = require('./middlewares/eth_call');
 const jsonrpcMeta = require('./middlewares/jsonrpc_meta');
 const adaptTxRelatedMethods = require('./middlewares/tx_related_methods');
@@ -19,13 +18,9 @@ const eth_getBlockByNumber = require('./middlewares/eth_getBlockByNumber');
 const eth_getBlockByHash = require('./middlewares/eth_getBlockByHash');
 const eth_call = require('./middlewares/eth_call');
 const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
-const { db } = require('./lib/cache');
-
-const PORTS = process.env.PORTS || 3000;
-console.log('PORTS', PORTS);
-const TARGET_URL = process.env.JSONRPC_URL;
-const L2_RPC_URL = process.env.L2_RPC_URL;
-const CORRECT_BLOCK_HASH = process.env.CORRECT_BLOCK_HASH || false;
+const { getDB } = require('./lib/cache');
+const { loopCorrectBlockHashs } = require('./services/correct_block_hash');
+const { PORTS, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
 
 const l2_methods = [
     'zkevm_batchNumber',
@@ -34,19 +29,6 @@ const l2_methods = [
     'zkevm_getBatchByNumber',
     'bor_getSnapshotProposerSequence',  // cdk-erigon 未开放此方法
 ];
-
-// const logger = winston.createLogger({
-//     level: 'info',
-//     format: winston.format.combine(
-//         winston.format.timestamp(),
-//         winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
-//     ),
-//     transports: [
-//         new winston.transports.Console(),
-//         new winston.transports.File({ filename: './logs/proxy.log' }),
-//         new winston.transports.File({ filename: './logs/error.log', level: 'error' }),
-//     ]
-// });
 
 function creatLogger(port) {
     return winston.createLogger({
@@ -62,14 +44,6 @@ function creatLogger(port) {
         ]
     });
 }
-
-// TODO: block 相关 rpc 支持
-// eth_getBlockByNumber [v]
-// eth_getBlockByHash
-// eth_getTransactionByBlockHashAndIndex
-// eth_getTransactionByBlockNumberAndIndex
-// eth_getTransactionReceipt
-// eth_getUncleByBlockHashAndIndex
 
 async function startServer(port) {
     const logger = creatLogger(port);
@@ -165,7 +139,8 @@ async function startServer(port) {
 
 
 async function main() {
-    await db.initTable();
+    await getDB().initTable();
+    await loopCorrectBlockHashs();
 
     const ports = PORTS.split(',').map(Number);
     for (const port of ports) {

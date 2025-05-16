@@ -8,7 +8,7 @@ module.exports = async function (ctx, next) {
         console.log("trigger eth_call or eth_estimateGas");
         const params = ctx.request.body.params;
         if (params[0]) {
-            if (!params[0].data) {
+            if (!params[0].data && params[0].input) {
                 ctx.request.body.params[0].data = params[0].input;
             }
         }

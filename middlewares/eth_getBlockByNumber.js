@@ -1,4 +1,4 @@
-const { correctBlockHash } = require('../lib/cache');
+const { correctBlockHash } = require('../lib/block_hash');
 
 module.exports = async function (ctx, next) {
     console.log('eth_getBlockByNumber middleware');
