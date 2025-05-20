@@ -1,7 +1,6 @@
 const Koa = require('koa');
 const websockify = require('koa-websocket');
 const axios = require('axios');
-const winston = require('winston');
 const { bodyParser } = require("@koa/bodyparser");
 const adaptEthCall = require('./middlewares/eth_call');
 const jsonrpcMeta = require('./middlewares/jsonrpc_meta');
@@ -21,6 +20,7 @@ const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
 const { getDB } = require('./lib/cache');
 const { loopCorrectBlockHashs } = require('./services/correct_block_hash');
 const { PORTS, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
+const { getApiLogger } = require('./logger');
 
 const l2_methods = [
     'zkevm_batchNumber',
@@ -30,23 +30,8 @@ const l2_methods = [
     'bor_getSnapshotProposerSequence',  // cdk-erigon 未开放此方法
 ];
 
-function creatLogger(port) {
-    return winston.createLogger({
-        level: 'info',
-        format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
-        ),
-        transports: [
-            // new winston.transports.Console(),
-            new winston.transports.File({ filename: `./logs/proxy_${port}.log` }),
-            new winston.transports.File({ filename: `./logs/error_${port}.log`, level: 'error' }),
-        ]
-    });
-}
-
 async function startServer(port) {
-    const logger = creatLogger(port);
+    const logger = getApiLogger(port);
     logger.info(`Starting server, port ${port}, TARGET_URL: ${TARGET_URL}, L2_RPC_URL: ${L2_RPC_URL}`);
 
     const app = websockify(new Koa());
