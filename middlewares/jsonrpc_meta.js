@@ -6,7 +6,7 @@ module.exports = function (logger) {
         const startAt = Date.now();
         try {
 
-            if (!ctx.request.body || !ctx.request.body.id === undefined) {
+            if (ctx.request.body && ctx.request.body.id === undefined) {
                 logger.error(`No id found of Request: ${JSON.stringify(ctx.request.body, null, '\t')}`);
             }
 
