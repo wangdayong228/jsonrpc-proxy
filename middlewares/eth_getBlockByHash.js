@@ -13,10 +13,18 @@ module.exports = async function (ctx, next) {
     console.log('trigger eth_getBlockByHash');
     const inputHash = ctx.request.body.params[0];
     const cfxHash = await getDB().getCfxHashByEthHash(inputHash)
-    if (!cfxHash) {
-        return resultNull(ctx);
+    // if (!cfxHash) {
+    //     // return resultNull(ctx);
+    //     // Note: 同时支持以 eth 和 cfx 查询 block，因为 op-challenge 的 disputeGame 合约中存储的是 cfxHash
+    //     cfxHash = inputHash;
+    // }else{
+    //     ctx.request.body.params[0] = cfxHash;
+    // }
+    
+    // Note: 同时支持以 eth 和 cfx 查询 block，因为 op-challenge 的 disputeGame 合约中存储的是 cfxHash
+    if(cfxHash){
+        ctx.request.body.params[0] = cfxHash;
     }
-    ctx.request.body.params[0] = cfxHash;
 
     await next();
     const block = ctx.response.body.result;
