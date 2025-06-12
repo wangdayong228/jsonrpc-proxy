@@ -2,6 +2,7 @@ const Koa = require('koa');
 const websockify = require('koa-websocket');
 const axios = require('axios');
 const { bodyParser } = require("@koa/bodyparser");
+const cors = require('./middlewares/cors');
 const adaptEthCall = require('./middlewares/eth_call');
 const jsonrpcMeta = require('./middlewares/jsonrpc_meta');
 const adaptTxRelatedMethods = require('./middlewares/tx_related_methods');
@@ -17,24 +18,15 @@ const eth_getBlockByNumber = require('./middlewares/eth_getBlockByNumber');
 const eth_getBlockByHash = require('./middlewares/eth_getBlockByHash');
 const eth_call = require('./middlewares/eth_call');
 const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
+const callRpc = require('./middlewares/call_rpc');
 const { getDB } = require('./lib/cache');
 const { loopCorrectBlockHashs } = require('./services/correct_block_hash');
 const { PORTS, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
 const { getApiLogger } = require('./logger');
 
-const l2_methods = [
-    'zkevm_batchNumber',
-    'zkevm_virtualBatchNumber',
-    'zkevm_verifiedBatchNumber',
-    'zkevm_getBatchByNumber',
-    'bor_getSnapshotProposerSequence',  // cdk-erigon 未开放此方法
-];
-
 // 构建中间件链
 function buildMiddlewareChain(logger) {
     const middlewares = [];
-
-    // 添加请求元数据处理
     middlewares.push(jsonrpcMeta(logger));
     middlewares.push(eth_transactionCount);
     middlewares.push(eth_getBalance);
@@ -49,13 +41,9 @@ function buildMiddlewareChain(logger) {
         middlewares.push(eth_getBlockByHash);
         middlewares.push(eth_call);
         middlewares.push(eth_getBlockReceipts);
+        middlewares.push(callRpc);
     }
     return middlewares;
-}
-
-// 获取目标 RPC URL
-function getTargetUrl(method) {
-    return l2_methods.includes(method) ? L2_RPC_URL : TARGET_URL;
 }
 
 // 创建错误响应
@@ -72,27 +60,19 @@ function createErrorResponse(id, message, code = -32603) {
 }
 
 // 创建一个处理单个 RPC 请求的函数
-// request 是rpc 请求体， {id, method, params}
-async function processSingleRequest(request, logger, middlewareChain) {
-    if (!request || !request.method) {
-        logger.error(`无效的请求格式: ${JSON.stringify(request)}`);
-        return createErrorResponse(request?.id, "Invalid request format");
+// @param {Object} rpcRequest - RPC 请求体，结构为 {id, method, params}
+// @param {Object} logger - 日志记录器
+// @param {Array} middlewareChain - 中间件链
+// @returns {Promise<Object>} - 处理后的 RPC 响应
+async function processSingleRequest(rpcRequest, logger, middlewareChain) {
+    if (!rpcRequest || !rpcRequest.method) {
+        logger.error(`无效的请求格式: ${JSON.stringify(rpcRequest)}`);
+        return createErrorResponse(rpcRequest?.id, "Invalid request format");
     }
 
-    // // 创建一个模拟的 ctx 对象
-    // const mockCtx = {
-    //     request: {
-    //         body: request,
-    //         rpcId: request.id,
-    //         rpcMethod: request.method
-    //     },
-    //     body: undefined
-    // };
-
-    const { id, method } = request;
     const mockCtx = {
         request: {
-            body: request,
+            body: rpcRequest,
         },
         response: {
             body: undefined
@@ -111,32 +91,9 @@ async function processSingleRequest(request, logger, middlewareChain) {
     // 执行中间件链
     let index = 0;
     const next = async () => {
-        if (index < middlewareChain.length) {
+        if (index <= middlewareChain.length) {
             const middleware = middlewareChain[index++];
             await middleware(mockCtx, next);
-        } else {
-            // 所有中间件执行完毕后，执行实际的 RPC 调用
-            const url = getTargetUrl(method);
-            try {
-                const { data } = await axios.post(url, request, {
-                    headers: {
-                        'Accept-Encoding': null,
-                    },
-                    timeout: 30000, // 添加超时设置
-                });
-
-                if (!data) {
-                    logger.warn(`RPC 调用无响应数据: ${JSON.stringify(request)}`);
-                }
-
-                mockCtx.body = data;
-            } catch (error) {
-                logger.error(`RPC 调用失败: ${error.message}`);
-                mockCtx.body = createErrorResponse(
-                    id,
-                    `RPC call failed: ${error.message}`
-                );
-            }
         }
     };
 
@@ -144,8 +101,8 @@ async function processSingleRequest(request, logger, middlewareChain) {
         await next();
         return mockCtx.body;
     } catch (error) {
-        logger.error(`处理单个请求出错: ${error.message}, 请求: ${JSON.stringify(request)}`);
-        return createErrorResponse(request.id, error.message);
+        logger.error(`处理单个请求出错: ${error.message}, 请求: ${JSON.stringify(rpcRequest)}`);
+        return createErrorResponse(rpcRequest.id, error.message);
     }
 }
 
@@ -169,6 +126,7 @@ async function startServer(port) {
 
     const app = websockify(new Koa());
     app.use(bodyParser());
+    app.use(cors);
 
     const middlewareChain = buildMiddlewareChain(logger);
     // 处理 RPC 请求（包括批量请求）
@@ -177,28 +135,6 @@ async function startServer(port) {
         if (Array.isArray(ctx.request.body)) {
             ctx.body = await processBatchRequest(ctx.request.body, logger, middlewareChain);
         } else {
-            // // 普通请求直接转发
-            // try {
-            //     const url = getTargetUrl(ctx.request.rpcMethod);
-            //     const { data } = await axios.post(url, ctx.request.body, {
-            //         headers: {
-            //             'Accept-Encoding': null,
-            //         },
-            //         timeout: 30000, // 添加超时设置
-            //     });
-
-            //     if (!data) {
-            //         logger.warn(`RPC 调用无响应数据: ${JSON.stringify(ctx.request.body)}`);
-            //     }
-
-            //     ctx.body = data;
-            // } catch (error) {
-            //     logger.error(`RPC 调用失败: ${error.message}`);
-            //     ctx.body = createErrorResponse(
-            //         ctx.request.rpcId, 
-            //         `RPC call failed: ${error.message}`
-            //     );
-            // }
             ctx.body = await processSingleRequest(ctx.request.body, logger, middlewareChain);
         }
     });
@@ -218,24 +154,6 @@ async function startServer(port) {
                     const results = await processBatchRequest(msgObj, logger, middlewareChain);
                     ctx.websocket.send(JSON.stringify(results));
                 } else {
-                    // // 普通 WebSocket 请求
-                    // try {
-                    //     const url = getTargetUrl(msgObj.method);
-                    //     const { data } = await axios.post(url, msgObj, {
-                    //         headers: {
-                    //             'Accept-Encoding': null,
-                    //         },
-                    //         timeout: 30000,
-                    //     });
-
-                    //     // 发送响应回客户端
-                    //     ctx.websocket.send(JSON.stringify(data));
-                    // } catch (error) {
-                    //     logger.error(`WebSocket RPC 调用失败: ${error.message}`);
-                    //     ctx.websocket.send(JSON.stringify(
-                    //         createErrorResponse(msgObj.id, error.message)
-                    //     ));
-                    // }
                     const result = await processSingleRequest(msgObj, logger, middlewareChain);
                     ctx.websocket.send(JSON.stringify(result));
                 }
