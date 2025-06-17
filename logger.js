@@ -1,3 +1,5 @@
+const { PORT } = require('./config');
+
 const winston = require('winston');
 function creatLoggerForApi(port) {
     return winston.createLogger({
@@ -27,17 +29,20 @@ function creatLoggerForCommon() {
     });
 }
 
-let loggers = {};
-function getApiLogger(port) {
-    if (!loggers[port]) {
-        loggers[port] = creatLoggerForApi(port);
-    }
-    return loggers[port];
-}
 
-let commonLogger = creatLoggerForCommon();
+// function getApiLogger() {
+//     return creatLoggerForApi(PORT);
+// if (!loggers[port]) {
+//     loggers[port] = creatLoggerForApi(port);
+// }
+// return loggers[port];
+// }
+
+// let commonLogger = creatLoggerForCommon();
+let logger = creatLoggerForApi(PORT);
 
 module.exports = {
-    getApiLogger,
-    commonLogger
+    // getApiLogger,
+    // commonLogger
+    logger
 }

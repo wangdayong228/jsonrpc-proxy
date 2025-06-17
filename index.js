@@ -21,8 +21,8 @@ const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
 const callRpc = require('./middlewares/call_rpc');
 const { getDB } = require('./lib/cache');
 const { loopCorrectBlockHashs } = require('./services/correct_block_hash');
-const { PORTS, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
-const { getApiLogger } = require('./logger');
+const { PORT, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
+const { logger } = require('./logger');
 
 // 构建中间件链
 function buildMiddlewareChain(logger) {
@@ -121,7 +121,6 @@ async function processBatchRequest(requests, logger, middlewareChain) {
 }
 
 async function startServer(port) {
-    const logger = getApiLogger(port);
     logger.info(`Starting server, port ${port}, TARGET_URL: ${TARGET_URL}, L2_RPC_URL: ${L2_RPC_URL}`);
 
     const app = websockify(new Koa());
@@ -186,11 +185,8 @@ async function main() {
     try {
         await getDB().initTable();
         await loopCorrectBlockHashs();
+        await startServer(PORT);
 
-        const ports = PORTS.split(',').map(Number);
-        for (const port of ports) {
-            await startServer(port);
-        }
     } catch (error) {
         console.error(`服务启动失败: ${error.message}, ${error.stack}`);
         process.exit(1);

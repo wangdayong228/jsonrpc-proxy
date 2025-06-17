@@ -2,12 +2,12 @@ const { ethers } = require('ethers');
 const { TARGET_URL, CORRECT_BLOCK_HASH_START_BLOCK_NUMBER, CORRECT_BLOCK_HASH_START_BLOCK_COUNT_BEFORE_LATEST } = require('../config');
 const { getDB } = require('../lib/cache');
 const { correctBlockHash } = require('../lib/block_hash');
-const { commonLogger } = require('../logger');
+const { logger } = require('../logger');
 
 const provider = new ethers.JsonRpcProvider(TARGET_URL);
 
 function getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber) {
-    commonLogger.info(`start getCorrectHashBaseBlockNumber, latestBlockNumber: ${latestBlockNumber}, inUseBaseBlockNumber: ${inUseBaseBlockNumber}`);
+    logger.info(`start getCorrectHashBaseBlockNumber, latestBlockNumber: ${latestBlockNumber}, inUseBaseBlockNumber: ${inUseBaseBlockNumber}`);
     let correctHashStartBlockNumber = CORRECT_BLOCK_HASH_START_BLOCK_NUMBER || latestBlockNumber;
     let correctHashStartBlockCountBeforeLatest = CORRECT_BLOCK_HASH_START_BLOCK_COUNT_BEFORE_LATEST || 0;
     inUseBaseBlockNumber = inUseBaseBlockNumber || Number.MAX_SAFE_INTEGER;
@@ -22,11 +22,11 @@ async function correctBlockHashTillLatest() {
     const inUseBaseBlockNumber = await getDB().getCorrectBlockHashBaseBlockNumber();
 
     const baseBlockNumber = getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber);
-    commonLogger.info('computed correct block hash baseBlockNumber', baseBlockNumber);
+    logger.info('computed correct block hash baseBlockNumber', baseBlockNumber);
 
     await getDB().setCorrectBlockHashBaseBlockNumber(baseBlockNumber);
 
-    commonLogger.info(`start correct block hash from ${"0x" + baseBlockNumber.toString(16)} to ${"0x" + latestBlockNumber.toString(16)}`);
+    logger.info(`start correct block hash from ${"0x" + baseBlockNumber.toString(16)} to ${"0x" + latestBlockNumber.toString(16)}`);
     await correctBlockHash(latestBlock);
 }
 

@@ -1,6 +1,6 @@
 const axios = require('axios');
-const { TARGET_URL, L2_RPC_URL } = require('../config');
-
+const { TARGET_URL, L2_RPC_URL,PORT } = require('../config');
+const { logger } = require('../logger');
 const l2_methods = [
     'zkevm_batchNumber',
     'zkevm_virtualBatchNumber',
@@ -13,6 +13,8 @@ const l2_methods = [
 function getTargetUrl(method) {
     return l2_methods.includes(method) ? L2_RPC_URL : TARGET_URL;
 }
+
+// const logger = getApiLogger(PORT);
 
 module.exports = async function (ctx, next) {
     const requestBody = ctx.request.body;
