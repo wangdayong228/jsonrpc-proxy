@@ -2,7 +2,8 @@ const { getBlockByHash } = require('../lib/rpc');
 const { headerForHashNotFound } = require('../lib/response');
 
 module.exports = async function (ctx, next) {
-    console.log('eth_getBlockReceipts middleware');
+    const start = Date.now();
+    console.log('eth_getBlockReceipts middleware start');
 
     const { method, params } = ctx.request.body;
     if (method != 'eth_getBlockReceipts') {
@@ -35,5 +36,5 @@ module.exports = async function (ctx, next) {
             console.log(item);
         });
     }
-    console.log('eth_getBlockReceipts middleware end');
+    console.log(`eth_getBlockReceipts middleware end, duration: ${Date.now() - start}ms`);
 }

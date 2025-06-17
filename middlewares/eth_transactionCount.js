@@ -3,7 +3,8 @@ const { headerForHashNotFound } = require('../lib/response');
 
 
 module.exports = async function (ctx, next) {
-    console.log('eth_transactionCount middleware');
+    const start = Date.now();
+    console.log('eth_transactionCount middleware start');
 
     const {method, params} = ctx.request.body;
     if (method === 'eth_getTransactionCount') {
@@ -24,6 +25,6 @@ module.exports = async function (ctx, next) {
     }
 
     await next();
-    console.log('eth_transactionCount middleware end');
+    console.log(`eth_transactionCount middleware end, duration: ${Date.now() - start}ms`);
 }
 

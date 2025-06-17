@@ -2,7 +2,8 @@ const { getBlockByHash } = require('../lib/rpc');
 const { headerForHashNotFound } = require('../lib/response');
 
 module.exports = async function (ctx, next) {
-    console.log('eth_getBalance middleware');
+    const start = Date.now();
+    console.log('eth_getBalance middleware start');
 
     const {method, params} = ctx.request.body;
     if (method === 'eth_getBalance') {
@@ -22,5 +23,5 @@ module.exports = async function (ctx, next) {
         }
     }
     await next();
-    console.log('eth_getBalance middleware end');
+    console.log(`eth_getBalance middleware end, duration: ${Date.now() - start}ms`);
 }

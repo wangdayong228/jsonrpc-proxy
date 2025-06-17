@@ -3,7 +3,8 @@ const { resultNull } = require('../lib/response');
 const { correctBlockHash } = require('../lib/block_hash');
 
 module.exports = async function (ctx, next) {
-    console.log('eth_getBlockByHash middleware');
+    const start = Date.now();
+    console.log('eth_getBlockByHash middleware start');
 
     const { method, params } = ctx.request.body;
     if (method != 'eth_getBlockByHash') {
@@ -30,5 +31,5 @@ module.exports = async function (ctx, next) {
     const block = ctx.response.body.result;
     await correctBlockHash(block);
 
-    console.log('eth_getBlockByHash middleware end');
+    console.log(`eth_getBlockByHash middleware end, duration: ${Date.now() - start}ms`);
 }

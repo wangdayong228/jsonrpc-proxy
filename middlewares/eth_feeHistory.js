@@ -1,7 +1,8 @@
 const { maxPriorityFeePerGas } = require('../lib/rpc');
 
 module.exports = async function (ctx, next) {
-    console.log('eth_feeHistory middleware');
+    const start = Date.now();
+    console.log('eth_feeHistory middleware start');
     const { method } = ctx.request.body;
     await next();
     if (method === 'eth_feeHistory') {
@@ -32,5 +33,5 @@ module.exports = async function (ctx, next) {
         // }
         // ctx.body.result = "0x" + gasLimit.toString(16);
     }
-    console.log('eth_feeHistory middleware end');
+    console.log(`eth_feeHistory middleware end, duration: ${Date.now() - start}ms`);
 }

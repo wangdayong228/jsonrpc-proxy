@@ -1,7 +1,8 @@
 const { getBlockByHash } = require('../lib/rpc');
 const { headerForHashNotFound: headerForHashNotFound } = require('../lib/response');
 module.exports = async function (ctx, next) {
-    console.log('eth_getStorageAt middleware');
+    const start = Date.now();
+    console.log('eth_getStorageAt middleware start');
 
     const { method, params } = ctx.request.body;
     if (method === 'eth_getStorageAt') {
@@ -26,5 +27,5 @@ module.exports = async function (ctx, next) {
         }
     }
     await next();
-    console.log('eth_getStorageAt middleware end');
+    console.log(`eth_getStorageAt middleware end, duration: ${Date.now() - start}ms`);
 }

@@ -1,5 +1,6 @@
 module.exports = async function (ctx, next) {
-    console.log('eth_estimateGas middleware');
+    const start = Date.now();
+    console.log('eth_estimateGas middleware start');
     const { method } = ctx.request.body;
     await next();
     if (method === 'eth_estimateGas') {
@@ -14,5 +15,5 @@ module.exports = async function (ctx, next) {
         }
         ctx.body.result = "0x" + gasLimit.toString(16);
     }
-    console.log('eth_estimateGas middleware end');
+    console.log(`eth_estimateGas middleware end, duration: ${Date.now() - start}ms`);
 }
