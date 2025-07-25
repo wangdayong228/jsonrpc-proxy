@@ -26,19 +26,17 @@ module.exports = function (logger) {
             }
 
             if (ctx.body.error) {
-                logger.error(`Req-${id} Error: ${JSON.stringify({
+                logger.error(`Req-${id} Error: <method ${method} duration ${Date.now() - startAt}> ${JSON.stringify({
                     method,
                     params: params || [],
                     error: ctx.body.error,
-                    duration: Date.now() - startAt
                 })}`);
             } else {
-                logger.info(`Req & Res: ${JSON.stringify({
+                logger.info(`Req & Res: <method ${method} duration ${Date.now() - startAt}> ${JSON.stringify({
                     id,
                     method,
                     params: params || [],
                     result: ctx.body.result,
-                    duration: Date.now() - startAt
                 }, null, '\t')}`);
             }
         } catch (error) {

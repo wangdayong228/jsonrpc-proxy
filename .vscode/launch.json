@@ -13,7 +13,7 @@
             ],
             "program": "${workspaceFolder}/index.js",
             "env": {
-                "PORTS": "3030"
+                "ENV_FILE": "${workspaceFolder}/.env_cdk"
             }
         }
     ]

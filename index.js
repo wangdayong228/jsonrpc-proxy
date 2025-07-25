@@ -21,7 +21,7 @@ const eth_getBlockReceipts = require('./middlewares/eth_getBlockReceipts');
 const callRpc = require('./middlewares/call_rpc');
 const { getDB } = require('./lib/cache');
 const { loopCorrectBlockHashs } = require('./services/correct_block_hash');
-const { PORT, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH } = require('./config');
+const { PORT, TARGET_URL, L2_RPC_URL, CORRECT_BLOCK_HASH, LOOP_CORRECT_BLOCK_HASH } = require('./config');
 const { logger } = require('./logger');
 
 // 构建中间件链
@@ -41,8 +41,8 @@ function buildMiddlewareChain(logger) {
         middlewares.push(eth_getBlockByHash);
         middlewares.push(eth_call);
         middlewares.push(eth_getBlockReceipts);
-        middlewares.push(callRpc);
     }
+    middlewares.push(callRpc);
     return middlewares;
 }
 
@@ -184,7 +184,9 @@ async function startServer(port) {
 async function main() {
     try {
         await getDB().initTable();
-        await loopCorrectBlockHashs();
+        if (LOOP_CORRECT_BLOCK_HASH) {
+            await loopCorrectBlockHashs();
+        }
         await startServer(PORT);
 
     } catch (error) {
