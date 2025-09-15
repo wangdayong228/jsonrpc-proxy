@@ -13,11 +13,16 @@ function getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber) 
     inUseBaseBlockNumber = inUseBaseBlockNumber || Number.MAX_SAFE_INTEGER;
 
     const startBlockByOffset = latestBlockNumber - correctHashStartBlockCountBeforeLatest;
-    return Math.min(correctHashStartBlockNumber, startBlockByOffset, inUseBaseBlockNumber);
+    let baseBlockNumber = Math.min(correctHashStartBlockNumber, startBlockByOffset, inUseBaseBlockNumber);
+    if (baseBlockNumber < 0) {
+        baseBlockNumber = 0;
+    }
+    return baseBlockNumber;
 }
 
 async function correctBlockHashTillLatest() {
     const latestBlock = await provider.getBlock("latest");
+    console.log("latestBlock", latestBlock);
     const latestBlockNumber = latestBlock.number;
     const inUseBaseBlockNumber = await getDB().getCorrectBlockHashBaseBlockNumber();
 

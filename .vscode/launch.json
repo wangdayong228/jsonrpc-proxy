@@ -13,7 +13,7 @@
             ],
             "program": "${workspaceFolder}/index.js",
             "env": {
-                "ENV_FILE": "${workspaceFolder}/.env_cdk"
+                "ENV_FILE": "${workspaceFolder}/.env_op"
             }
         }
     ]

@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./tests"
+    "test": "mocha ./tests",
+    "clear": "rm -rf ./logs/* && rm -rf ./data/*"
   },
   "author": "",
   "license": "ISC",
