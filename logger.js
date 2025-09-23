@@ -9,7 +9,7 @@ function creatLoggerForApi(port) {
             winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
         ),
         transports: [
-            // new winston.transports.Console(),
+            new winston.transports.Console(),
             new winston.transports.File({ filename: `${__dirname}/logs/proxy_${port}.log` }),
             new winston.transports.File({ filename: `${__dirname}/logs/error_${port}.log`, level: 'error' }),
         ]

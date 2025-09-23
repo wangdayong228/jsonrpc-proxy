@@ -29,7 +29,7 @@ module.exports = async function (ctx, next) {
 
     await next();
     const block = ctx.response.body.result;
-    await correctBlockHash(block);
+    ctx.response.body.result = await correctBlockHash(block);
 
     console.log(`eth_getBlockByHash middleware end, duration: ${Date.now() - start}ms`);
 }

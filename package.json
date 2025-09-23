@@ -23,5 +23,8 @@
     "mocha": "^11.2.2",
     "sqlite3": "^5.1.7",
     "winston": "^3.13.1"
+  },
+  "devDependencies": {
+    "globals": "^16.4.0"
   }
 }

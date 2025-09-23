@@ -13,8 +13,23 @@
             ],
             "program": "${workspaceFolder}/index.js",
             "env": {
-                "ENV_FILE": "${workspaceFolder}/.env_op"
+                "ENV_FILE": "${workspaceFolder}/.env_op_cfxtest"
             }
+        },
+        {
+            "name": "Debug Mocha Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/mocha",
+            "args": [
+                "./tests/provider.test.js",
+                "--timeout", "10000"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "ENV_FILE": "./env.example"
+            },
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }
