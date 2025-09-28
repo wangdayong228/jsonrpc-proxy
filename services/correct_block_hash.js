@@ -19,26 +19,47 @@ function getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber) 
     return baseBlockNumber;
 }
 
+let correcting = false;
 async function correctBlockHashTillLatest() {
-    logger.info("start correctBlockHashTillLatest");
-    const latestBlock = await provider.send("eth_getBlockByNumber", ["latest", false]);
-    const latestBlockNumber = Number(latestBlock.number);
-    const inUseBaseBlockNumber = await getDB().getCorrectBlockHashBaseBlockNumber();
+    if (correcting) {
+        logger.info('skip correctBlockHashTillLatest: previous run still in progress');
+        return;
+    }
+    correcting = true;
 
-    const baseBlockNumber = getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber); 
-    logger.info(`computed correct eth hash with latestBlockNumber ${latestBlockNumber}, baseBlockNumber ${baseBlockNumber} `);
-
-    await getDB().setCorrectBlockHashBaseBlockNumber(Number(baseBlockNumber));
-
-    logger.info(`start correct block hash to ${"0x" + latestBlockNumber.toString(16)}`);
-    await correctBlockHash(latestBlock);
+    try{
+        logger.info("start correctBlockHashTillLatest");
+        const latestBlock = await provider.send("eth_getBlockByNumber", ["latest", false]);
+        const latestBlockNumber = Number(latestBlock.number);
+        const inUseBaseBlockNumber = await getDB().getCorrectBlockHashBaseBlockNumber();
+    
+        const baseBlockNumber = getCorrectHashBaseBlockNumber(latestBlockNumber, inUseBaseBlockNumber); 
+        logger.info(`computed correct eth hash with latestBlockNumber ${latestBlockNumber}, baseBlockNumber ${baseBlockNumber} `);
+    
+        await getDB().setCorrectBlockHashBaseBlockNumber(Number(baseBlockNumber));
+    
+        logger.info(`start correct block hash to ${"0x" + latestBlockNumber.toString(16)}`);
+        await correctBlockHash(latestBlock);
+    }catch(error){
+        logger.error(`correctBlockHashTillLatest error: ${error}`);
+    }finally{
+        correcting = false;
+    }
 }
 
 async function loopCorrectBlockHashs(){
     await correctBlockHashTillLatest();
-    setInterval(async () => {
-        await correctBlockHashTillLatest();
-    }, 5000);
+    
+    Promise.resolve().then(async () => {
+        for(;;){
+            await sleep(5000);
+            await correctBlockHashTillLatest()
+        }
+    });
+}
+
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
