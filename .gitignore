@@ -6,3 +6,4 @@ data
 .log
 rpc_cache.db
 db_demo.js
+db/**
