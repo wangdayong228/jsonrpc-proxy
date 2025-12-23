@@ -6,7 +6,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./tests",
-    "clear": "rm -rf ./logs/* && rm -rf ./data/*"
+    "clear": "rm -rf ./logs/* && rm -rf ./data/*",
+    "start:cdk": "pm2 start \"ENV_FILE=.env_cdk node ./index.js\" --name jsonrpc-proxy-cdk",
+    "start:op": "pm2 start \"ENV_FILE=.env_op node ./index.js\" --name jsonrpc-proxy-op"
   },
   "author": "",
   "license": "ISC",
