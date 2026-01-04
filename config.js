@@ -10,7 +10,7 @@ console.log("PORT", PORT);
 const TARGET_URL = process.env.JSONRPC_URL;
 const L2_RPC_URL = process.env.L2_RPC_URL;
 const CORRECT_BLOCK_HASH = process.env.CORRECT_BLOCK_HASH === undefined ? false : process.env.CORRECT_BLOCK_HASH === "true";
-const LOOP_CORRECT_BLOCK_HASH = process.env.LOOP_CORRECT_BLOCK_HASH === undefined ? true : process.env.LOOP_CORRECT_BLOCK_HASH === "true";
+const LOOP_CORRECT_BLOCK_HASH = process.env.LOOP_CORRECT_BLOCK_HASH === undefined ? false : process.env.LOOP_CORRECT_BLOCK_HASH === "true";
 const DB_PATH = __dirname + "/db/" + PORT + "/rpc_cache.db";
 const HASH_MAP_START_BLOCK_NUMBER = process.env.HASH_MAP_START_BLOCK_NUMBER || 0;
 const HASH_MAP_START_BLOCK_COUNT_BEFORE_LATEST = process.env.HASH_MAP_START_BLOCK_COUNT_BEFORE_LATEST || 0;
