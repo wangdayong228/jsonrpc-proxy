@@ -13,6 +13,7 @@ const eth_getBalance = require("./middlewares/eth_getBalance");
 const eth_getCode = require("./middlewares/eth_getCode");
 const eth_getStorageAt = require("./middlewares/eth_getStorageAt");
 const eth_estimateGas = require("./middlewares/eth_estimateGas");
+const eth_gasPrice = require("./middlewares/eth_gasPrice");
 const eth_feeHistory = require("./middlewares/eth_feeHistory");
 const eth_getBlockByNumber = require("./middlewares/eth_getBlockByNumber");
 const eth_getBlockByHash = require("./middlewares/eth_getBlockByHash");
@@ -35,6 +36,7 @@ function buildMiddlewareChain(logger) {
     middlewares.push(eth_getStorageAt);
     middlewares.push(eth_feeHistory);
     middlewares.push(eth_estimateGas);
+    middlewares.push(eth_gasPrice);
 
     // 按照逻辑顺序添加中间件
     if (CORRECT_BLOCK_HASH) {
