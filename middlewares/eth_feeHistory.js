@@ -1,4 +1,5 @@
 const { maxPriorityFeePerGas } = require('../lib/rpc');
+const MAX_GAS_WEI = 20_000_000_000n; // 20 gwei
 
 module.exports = async function (ctx, next) {
     const start = Date.now();
@@ -17,6 +18,10 @@ module.exports = async function (ctx, next) {
 
             if(BigInt(baseFeePerGas[i]) < BigInt(1e9)) {
                 baseFeePerGas[i] = "0x" + BigInt(1e9).toString(16);
+            }
+
+            if (BigInt(baseFeePerGas[i]) > MAX_GAS_WEI) {
+                baseFeePerGas[i] = "0x" + MAX_GAS_WEI.toString(16);
             }
         }
         ctx.body.result.baseFeePerGas = baseFeePerGas;

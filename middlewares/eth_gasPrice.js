@@ -1,3 +1,5 @@
+const MAX_GAS_WEI = 20_000_000_000n; // 20 gwei
+
 module.exports = async function (ctx, next) {
     const start = Date.now();
     console.log('eth_gasPrice middleware start');
@@ -12,7 +14,8 @@ module.exports = async function (ctx, next) {
         }
 
         const gasPrice = BigInt(ctx.body.result) * 2n;
-        ctx.body.result = '0x' + gasPrice.toString(16);
+        const normalizedGasPrice = gasPrice > MAX_GAS_WEI ? MAX_GAS_WEI : gasPrice;
+        ctx.body.result = '0x' + normalizedGasPrice.toString(16);
     }
 
     console.log(`eth_gasPrice middleware end, duration: ${Date.now() - start}ms`);
