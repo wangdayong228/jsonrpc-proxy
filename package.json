@@ -8,7 +8,8 @@
     "test": "mocha ./tests",
     "clear": "rm -rf ./logs/* && rm -rf ./db/*",
     "start:cdk": "pm2 start \"ENV_FILE=.env_cdk node ./index.js\" --name jsonrpc-proxy-cdk",
-    "start:op": "pm2 start \"ENV_FILE=.env_op node ./index.js\" --name jsonrpc-proxy-op"
+    "start:op": "pm2 start \"ENV_FILE=.env_op node ./index.js\" --name jsonrpc-proxy-op",
+    "rotate-log": "rm -rf ./logs/proxy_*.log && pm2 flush && pm2 restart jsonrpc-proxy-op jsonrpc-proxy-cdk"
   },
   "author": "",
   "license": "ISC",
